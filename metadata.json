@@ -1,0 +1,7 @@
+{
+  "name": "OmniForge & Tania Studio",
+  "description": "Privates KI-Rollenspiel-, Charakter- und Medien-Studio mit In-Chat Generierung, Prompt-Matrix und Setup-Hub.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
