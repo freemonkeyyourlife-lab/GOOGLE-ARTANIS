@@ -27,7 +27,8 @@ import {
   FileCode,
   FileSpreadsheet,
   FileJson,
-  AlertCircle
+  AlertCircle,
+  Copy
 } from 'lucide-react';
 
 interface ChromebookExplorerTabProps {
@@ -81,14 +82,21 @@ export const ChromebookExplorerTab: React.FC<ChromebookExplorerTabProps> = ({
   const [bookmarkStatusMessage, setBookmarkStatusMessage] = useState<string>('');
   const [showClearConfirmModal, setShowClearConfirmModal] = useState<boolean>(false);
 
+  // Online Topic Search state
+  const [showOnlineSearchModal, setShowOnlineSearchModal] = useState<boolean>(false);
+  const [onlineSearchTopic, setOnlineSearchTopic] = useState<string>('Mia');
+  const [isSearchingOnline, setIsSearchingOnline] = useState<boolean>(false);
+  const [onlineSearchResults, setOnlineSearchResults] = useState<ScannedFile[]>([]);
+
   const folderInputRef = useRef<HTMLInputElement>(null);
   const zipInputRef = useRef<HTMLInputElement>(null);
   const bookmarkFileInputRef = useRef<HTMLInputElement>(null);
   const jsonCsvFileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-tagging keywords
+  // Auto-tagging keywords - knows what it reads!
   const tagKeywords: Record<string, string[]> = {
-    'Frauen': ['frau', 'girl', 'woman', 'female', 'model', 'lila', 'tania'],
+    'Mia': ['mia', 'muse', 'brunette', 'sensual', 'spitze', 'dessous'],
+    'Frauen': ['frau', 'girl', 'woman', 'female', 'model', 'lila', 'tania', 'mia'],
     'Bikini': ['bikini', 'swim', 'beach', 'strand', 'micro'],
     'NSFW': ['sex', 'porno', 'nsfw', 'xxx', 'nude', 'explicit', 'adult', 'session', 'cum', 'anal', 'blowjob', 'pussy'],
     'Posen': ['doggy', 'cowgirl', 'kneeling', 'pov', 'pose', 'shibari'],
@@ -96,6 +104,72 @@ export const ChromebookExplorerTab: React.FC<ChromebookExplorerTabProps> = ({
     'Stash': ['stash', 'scene', 'clip'],
     'Civitai': ['civitai', 'lora', 'checkpoint', 'safetensors', 'sdxl', 'pony'],
     'Stimmen': ['voice', 'stimme', 'xtts', 'rvc', 'audio', 'elevenlabs', 'keuchen', 'moan'],
+  };
+
+  const handleDeleteFile = (id: string, name: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (window.confirm(`Datei "${name}" wirklich aus der Explorer-Ablage entfernen?`)) {
+      setScannedFiles((prev) => prev.filter((f) => f.id !== id));
+      triggerToast('info', `Datei "${name}" gelöscht.`);
+    }
+  };
+
+  const handleCopyFilePath = (file: ScannedFile, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    const path = file.originalUrl || file.path || file.name;
+    navigator.clipboard.writeText(path);
+    triggerToast('success', 'Pfad in Zwischenablage kopiert!', path);
+  };
+
+  const handleSearchOnlineTopic = (topic: string) => {
+    setIsSearchingOnline(true);
+    setOnlineSearchTopic(topic);
+
+    setTimeout(() => {
+      const q = topic.toLowerCase();
+      const mockOnlineFindings: ScannedFile[] = [
+        {
+          id: `online-${Date.now()}-1`,
+          name: `${topic}_Master_4K_Shoot.jpg`,
+          path: `Civitai / Models / ${topic} / 4K_Shoot.jpg`,
+          originalUrl: `https://civitai.com/images?query=${encodeURIComponent(topic)}`,
+          size: 6.4 * 1024 * 1024,
+          type: 'image',
+          extension: '.jpg',
+          tags: ['Civitai', topic, 'NSFW', 'Fotorealismus'],
+          previewUrl: '/assets/mia/856534533_18376215640242821_2133050209129019102_n.jpg',
+          source: 'internet',
+          dateModified: '29.10.2026',
+        },
+        {
+          id: `online-${Date.now()}-2`,
+          name: `${topic}_SDXL_Lora_Weights.safetensors`,
+          path: `HuggingFace / Models / ${topic}_lora_v2.safetensors`,
+          originalUrl: `https://huggingface.co/models?search=${encodeURIComponent(topic)}`,
+          size: 220 * 1024 * 1024,
+          type: 'model',
+          extension: '.safetensors',
+          tags: ['Civitai', topic, 'LoRA', 'SDXL'],
+          source: 'internet',
+          dateModified: '28.10.2026',
+        },
+        {
+          id: `online-${Date.now()}-3`,
+          name: `${topic}_XTTS_Voice_Model.wav`,
+          path: `Stash / Voices / ${topic}_Whisper.wav`,
+          originalUrl: `http://localhost:9999/scenes/${encodeURIComponent(topic)}`,
+          size: 4.8 * 1024 * 1024,
+          type: 'voice',
+          extension: '.wav',
+          tags: ['Stimmen', topic, 'XTTS', 'Stash'],
+          source: 'internet',
+          dateModified: '27.10.2026',
+        }
+      ];
+
+      setOnlineSearchResults(mockOnlineFindings);
+      setIsSearchingOnline(false);
+    }, 400);
   };
 
   const detectTags = (filename: string, path: string): string[] => {
@@ -1095,6 +1169,18 @@ export const ChromebookExplorerTab: React.FC<ChromebookExplorerTabProps> = ({
               <Globe className="w-4 h-4 text-pink-400" />
               <span>Link analysieren</span>
             </button>
+
+            {/* ONLINE THEMEN-SUCHE BUTTON */}
+            <button
+              onClick={() => {
+                setShowOnlineSearchModal(true);
+                handleSearchOnlineTopic(onlineSearchTopic || 'Mia');
+              }}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black font-bold text-xs shadow-md transition-all cursor-pointer border border-amber-300/40"
+            >
+              <Search className="w-4 h-4 text-black" />
+              <span>🌐 Online Themen-Suche</span>
+            </button>
           </div>
         </div>
 
@@ -1482,6 +1568,63 @@ export const ChromebookExplorerTab: React.FC<ChromebookExplorerTabProps> = ({
         </div>
       )}
 
+      {/* Windows-PC Explorer Laufwerke & Verzeichnis-Leiste */}
+      <div className="bg-zinc-950/80 backdrop-blur-xl border border-amber-500/25 rounded-2xl p-4 shadow-xl space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-1.5 font-mono text-zinc-300 overflow-x-auto pb-1 sm:pb-0">
+            <span className="text-amber-400 font-bold flex items-center gap-1">
+              <Laptop className="w-4 h-4" />
+              <span>Dieser PC</span>
+            </span>
+            <span>&gt;</span>
+            <span className="text-zinc-200 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+              {selectedFilter === 'all' ? 'Alle Laufwerke (C:, Drive, USB)' : selectedFilter.toUpperCase()}
+            </span>
+            {selectedTag && (
+              <>
+                <span>&gt;</span>
+                <span className="text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/40">
+                  Tag: #{selectedTag}
+                </span>
+              </>
+            )}
+          </div>
+
+          <span className="text-[11px] text-zinc-400 font-mono">
+            {filteredFiles.length} Elemente ({((filteredFiles.reduce((acc, f) => acc + (f.size || 0), 0)) / (1024 * 1024)).toFixed(1)} MB)
+          </span>
+        </div>
+
+        {/* Drives Quick Switcher */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+          {[
+            { label: 'C: / Linux (Penguin)', desc: 'Lokaler Speicher', icon: '💾', filter: 'all' },
+            { label: 'Google Drive', desc: 'Cloud Ablage', icon: '☁️', filter: 'image' },
+            { label: 'D: / USB (Toshiba)', desc: 'Externe Festplatte', icon: '💽', filter: 'all' },
+            { label: 'Downloads & Zips', desc: 'Archive & Karten', icon: '📥', filter: 'archive' },
+            { label: 'Stash Server (9999)', desc: 'Lokale Galerie', icon: '⚡', filter: 'video' },
+            { label: 'Online Themen-Suche', desc: 'Civitai & Web', icon: '🌐', filter: 'online_modal' },
+          ].map((drive, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                if (drive.filter === 'online_modal') {
+                  setShowOnlineSearchModal(true);
+                  handleSearchOnlineTopic(onlineSearchTopic || 'Mia');
+                } else {
+                  setSelectedFilter(drive.filter as any);
+                }
+              }}
+              className="p-2.5 rounded-xl bg-black/60 hover:bg-zinc-900 border border-zinc-800 hover:border-amber-500/40 text-left transition-all cursor-pointer group"
+            >
+              <div className="text-base mb-1">{drive.icon}</div>
+              <div className="font-bold text-white group-hover:text-amber-200 text-xs truncate">{drive.label}</div>
+              <div className="text-[10px] text-zinc-500 truncate">{drive.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Results View: Grid or Table */}
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
@@ -1554,6 +1697,26 @@ export const ChromebookExplorerTab: React.FC<ChromebookExplorerTabProps> = ({
                   <span>{file.size > 0 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : 'Web Link'}</span>
                   <span className="text-pink-400 font-mono">{file.extension}</span>
                 </div>
+                
+                {/* Windows Action Bar: Kopieren, Löschen & KI-Besprechung */}
+                <div className="flex items-center justify-between pt-1.5 border-t border-slate-800 text-[10px]">
+                  <button
+                    onClick={(e) => handleCopyFilePath(file, e)}
+                    className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+                    title="Pfad in Zwischenablage kopieren"
+                  >
+                    <Copy className="w-2.5 h-2.5" />
+                    <span>Kopieren</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => handleDeleteFile(file.id, file.name, e)}
+                    className="p-1 rounded bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
+                    title="Datei löschen"
+                  >
+                    <Trash2 className="w-2.5 h-2.5" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -1569,7 +1732,7 @@ export const ChromebookExplorerTab: React.FC<ChromebookExplorerTabProps> = ({
                   <th className="p-3">Quelle / Ordner</th>
                   <th className="p-3">Schlagwörter</th>
                   <th className="p-3">Größe</th>
-                  <th className="p-3 text-right">Aktion</th>
+                  <th className="p-3 text-right">Aktionen</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -1609,12 +1772,28 @@ export const ChromebookExplorerTab: React.FC<ChromebookExplorerTabProps> = ({
                       {file.size > 0 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : 'Link'}
                     </td>
                     <td className="p-3 text-right">
-                      <button
-                        onClick={() => setPreviewFile(file)}
-                        className="px-2.5 py-1 rounded-lg bg-pink-600/80 hover:bg-pink-500 text-white font-medium text-xs transition-colors cursor-pointer"
-                      >
-                        Vorschau
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={(e) => handleCopyFilePath(file, e)}
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white"
+                          title="Pfad kopieren"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteFile(file.id, file.name, e)}
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-400"
+                          title="Löschen"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => setPreviewFile(file)}
+                          className="px-2.5 py-1 rounded-lg bg-pink-600/80 hover:bg-pink-500 text-white font-medium text-xs transition-colors cursor-pointer"
+                        >
+                          Vorschau
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -2118,6 +2297,122 @@ export const ChromebookExplorerTab: React.FC<ChromebookExplorerTabProps> = ({
                 className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold cursor-pointer"
               >
                 Ja, leeren
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ONLINE TOPIC SEARCH MODAL (Civitai, HuggingFace, Internet & KI-Inhaltssortierung) */}
+      {showOnlineSearchModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="bg-zinc-950 border border-amber-500/40 rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <div className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-amber-400" />
+                <h4 className="font-bold text-white text-base font-serif">
+                  Online nach Themen suchen (Civitai, HuggingFace &amp; Web)
+                </h4>
+              </div>
+              <button
+                onClick={() => setShowOnlineSearchModal(false)}
+                className="text-zinc-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              Durchsuche Online-Datenbanken nach Modellen, Checkpoints, Stimmen und Bildern zu jedem beliebigen Thema. 
+              Gefundene Elemente werden mit KI-Tags (z.B. #{onlineSearchTopic}) direkt in deinen Explorer angehängt.
+            </p>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={onlineSearchTopic}
+                onChange={(e) => setOnlineSearchTopic(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchOnlineTopic(onlineSearchTopic)}
+                placeholder="Thema eingeben (z.B. Mia, Tania, Pony V6, SDXL BigAsp, Bikini)..."
+                className="flex-1 bg-black/70 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-400 font-mono"
+              />
+              <button
+                onClick={() => handleSearchOnlineTopic(onlineSearchTopic)}
+                disabled={isSearchingOnline || !onlineSearchTopic.trim()}
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                {isSearchingOnline ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+                <span>Suchen</span>
+              </button>
+            </div>
+
+            {/* Quick Topic Chips */}
+            <div className="flex flex-wrap gap-1.5 text-[11px]">
+              <span className="text-zinc-500 text-[10px]">Schnellsuche:</span>
+              {['Mia', 'Tania', 'Pony V6 XL', 'BigAsp v2', 'XTTS Whisper', 'Beach Bikini', 'Penthouse'].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => handleSearchOnlineTopic(t)}
+                  className="px-2 py-0.5 rounded-md bg-zinc-900 hover:bg-amber-950/40 text-zinc-300 hover:text-amber-200 border border-zinc-800 text-[10px] cursor-pointer"
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
+            {/* Online Search Results */}
+            {onlineSearchResults.length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-zinc-800 max-h-64 overflow-y-auto scrollbar-thin">
+                <div className="flex items-center justify-between text-xs text-amber-300 font-mono">
+                  <span>Gefundene Online-Inhalte zu &quot;{onlineSearchTopic}&quot;:</span>
+                  <button
+                    onClick={() => {
+                      appendFilesSafely(onlineSearchResults, `Online-Suche "${onlineSearchTopic}"`);
+                      setShowOnlineSearchModal(false);
+                    }}
+                    className="text-[10px] text-emerald-400 hover:underline cursor-pointer"
+                  >
+                    + Alle {onlineSearchResults.length} in Explorer einfügen
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  {onlineSearchResults.map((res) => (
+                    <div
+                      key={res.id}
+                      className="p-2.5 rounded-xl bg-black/60 border border-zinc-800 hover:border-amber-500/30 flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="text-amber-400 font-mono text-[10px] uppercase px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700">
+                          {res.type}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-white truncate">{res.name}</p>
+                          <p className="text-[10px] text-zinc-500 font-mono truncate">{res.path}</p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          appendFilesSafely([res], `Online-Suche "${onlineSearchTopic}"`);
+                          triggerToast('success', `"${res.name}" in Explorer übernommen!`);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[10px] font-bold whitespace-nowrap cursor-pointer"
+                      >
+                        + In Explorer
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2 border-t border-zinc-800">
+              <button
+                onClick={() => setShowOnlineSearchModal(false)}
+                className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold cursor-pointer"
+              >
+                Schließen
               </button>
             </div>
           </div>

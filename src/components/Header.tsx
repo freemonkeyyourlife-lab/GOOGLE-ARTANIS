@@ -11,7 +11,12 @@ import {
   HelpCircle, 
   Laptop,
   Volume2,
-  BookOpen
+  BookOpen,
+  Palette,
+  Search,
+  Brain,
+  Box,
+  Package
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -30,41 +35,99 @@ export const Header: React.FC<HeaderProps> = ({
   settings,
 }) => {
   const themeGradients = {
+    gold_obsidian: 'from-amber-400 via-yellow-300 to-amber-600',
+    silver_noir: 'from-zinc-200 via-slate-300 to-zinc-400',
     artanis_neon: 'from-pink-600 via-rose-500 to-purple-600',
     cyber_violet: 'from-purple-600 via-indigo-500 to-pink-600',
     emerald_noir: 'from-emerald-600 via-teal-500 to-cyan-600',
     midnight_gold: 'from-amber-500 via-yellow-600 to-rose-600',
   };
 
-  const activeGradient = themeGradients[settings.theme] || themeGradients.artanis_neon;
+  const activeGradient = themeGradients[settings.theme] || themeGradients.gold_obsidian;
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-950/95 backdrop-blur-md border-b border-pink-900/30">
+    <header className="sticky top-0 z-40 bg-black/85 backdrop-blur-xl border-b border-amber-500/20 shadow-[0_8px_32px_rgba(0,0,0,0.85)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
         
-        {/* Brand Logo & Artanis Info */}
+        {/* Brand Logo & Artanis Info - Black, Gold & Silver Glass */}
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${activeGradient} flex items-center justify-center shadow-lg shadow-pink-600/20 ring-1 ring-pink-400/30 flex-shrink-0`}>
-            <Flame className="w-6 h-6 text-white" />
+          <div className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${activeGradient} flex items-center justify-center shadow-lg shadow-amber-500/25 ring-1 ring-amber-300/40 flex-shrink-0`}>
+            <Flame className="w-6 h-6 text-black" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-pink-400 via-rose-300 to-purple-300 bg-clip-text text-transparent tracking-wide">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-400 bg-clip-text text-transparent tracking-wide font-serif">
                 ARTANIS × TANIA
               </h1>
-              <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-pink-950/80 text-pink-300 border border-pink-800/50 flex items-center gap-1">
-                <Laptop className="w-3 h-3 text-pink-400" />
-                <span>Chromebook</span>
+              <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 flex items-center gap-1 shadow-sm">
+                <Laptop className="w-3 h-3 text-amber-400" />
+                <span>Chromebook Edition</span>
+              </span>
+              <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-zinc-900/90 text-zinc-300 border border-zinc-700/60">
+                Mia · Muse #1
               </span>
             </div>
-            <p className="text-xs text-slate-400">
-              Private Interactive Archive • Unzensiertes Creator Studio
+            <p className="text-xs text-zinc-400">
+              Private Bilderwerkstatt &amp; Erotik-Studio • SillyTavern Anbindung
             </p>
           </div>
         </div>
 
         {/* Navigation Tabs (Artanis Modules) */}
         <nav className="flex items-center gap-1 overflow-x-auto pb-1 xl:pb-0 scrollbar-none text-xs">
+          {/* 1. Bild-Generator (Erzeugen & Archivieren) */}
+          <button
+            onClick={() => setActiveTab('generator')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+              activeTab === 'generator'
+                ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md shadow-pink-600/30 font-semibold'
+                : 'text-slate-300 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Palette className="w-3.5 h-3.5 text-pink-300" />
+            <span>Bild-Generator 🎨</span>
+          </button>
+
+          {/* 2. Rückwärtssuche / Inspector */}
+          <button
+            onClick={() => setActiveTab('inspector')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+              activeTab === 'inspector'
+                ? 'bg-pink-600 text-white shadow-md shadow-pink-600/30 font-semibold'
+                : 'text-slate-300 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Search className="w-3.5 h-3.5 text-cyan-300" />
+            <span>Rückwärtssuche 🔍</span>
+          </button>
+
+          {/* 3. LoRA Charakter Training */}
+          <button
+            onClick={() => setActiveTab('training')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+              activeTab === 'training'
+                ? 'bg-pink-600 text-white shadow-md shadow-pink-600/30 font-semibold'
+                : 'text-slate-300 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Brain className="w-3.5 h-3.5 text-amber-300" />
+            <span>LoRA Training 🧠</span>
+          </button>
+
+          {/* 4. Interaktive 3D-Bühne & Audio */}
+          <button
+            onClick={() => setActiveTab('three3d')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+              activeTab === 'three3d'
+                ? 'bg-pink-600 text-white shadow-md shadow-pink-600/30 font-semibold'
+                : 'text-slate-300 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Box className="w-3.5 h-3.5 text-emerald-300" />
+            <span>3D-Bühne 🌐</span>
+          </button>
+
+          {/* 5. Chat & Flaschendrehen */}
           <button
             onClick={() => setActiveTab('chat')}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
@@ -74,9 +137,10 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <MessageSquareHeart className="w-3.5 h-3.5 text-rose-300" />
-            <span>Chat &amp; Flaschendrehen 🍾</span>
+            <span>Chat &amp; Spiel 🍾</span>
           </button>
 
+          {/* 6. Charaktere */}
           <button
             onClick={() => setActiveTab('characters')}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
@@ -89,6 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Charaktere</span>
           </button>
 
+          {/* 7. Stimmen */}
           <button
             onClick={() => setActiveTab('voices')}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
@@ -101,6 +166,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Stimmen</span>
           </button>
 
+          {/* 8. Prompt Studio */}
           <button
             onClick={() => setActiveTab('prompts')}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
@@ -113,6 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Prompt Studio</span>
           </button>
 
+          {/* 9. Video & Media */}
           <button
             onClick={() => setActiveTab('media_studio')}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
@@ -125,6 +192,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Video &amp; Media</span>
           </button>
 
+          {/* 10. Storys & Sessions */}
           <button
             onClick={() => setActiveTab('stories')}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
@@ -134,35 +202,63 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <BookOpen className="w-3.5 h-3.5 text-pink-300" />
-            <span>Storys &amp; Sessions</span>
+            <span>Storys</span>
           </button>
 
+          {/* 11. Windows-Explorer & Smart Explorer */}
           <button
             onClick={() => setActiveTab('explorer')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
               activeTab === 'explorer'
-                ? 'bg-pink-600 text-white shadow-md shadow-pink-600/30 font-semibold'
-                : 'text-slate-300 hover:text-white hover:bg-slate-900'
+                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold shadow-md shadow-amber-500/20 border border-amber-300/40'
+                : 'text-zinc-300 hover:text-white hover:bg-zinc-900 border border-transparent hover:border-zinc-800'
             }`}
           >
             <FolderSearch className="w-3.5 h-3.5 text-emerald-300" />
-            <span>Dateien &amp; Drive</span>
+            <span>Dateien &amp; Explorer</span>
             {scannedCount > 0 && (
-              <span className="text-[10px] bg-pink-950/90 text-pink-200 border border-pink-700/50 px-1.5 py-0.2 rounded-full font-mono">
+              <span className="text-[10px] bg-amber-950/90 text-amber-200 border border-amber-700/50 px-1.5 py-0.2 rounded-full font-mono">
                 {scannedCount}
               </span>
             )}
           </button>
 
+          {/* 12. KI-Nachschlagewerk (Neu!) */}
           <button
-            onClick={() => setActiveTab('customizer')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
-              activeTab === 'customizer'
-                ? 'bg-pink-600 text-white shadow-md shadow-pink-600/30 font-semibold'
-                : 'text-slate-300 hover:text-white hover:bg-slate-900'
+            onClick={() => setActiveTab('knowledge')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === 'knowledge'
+                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold shadow-md shadow-amber-500/20 border border-amber-300/40'
+                : 'text-zinc-300 hover:text-white hover:bg-zinc-900 border border-transparent hover:border-zinc-800'
             }`}
           >
-            <Sliders className="w-3.5 h-3.5 text-pink-300" />
+            <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+            <span>KI-Nachschlagewerk 📚</span>
+          </button>
+
+          {/* 13. Universal Exporter (Neu!) */}
+          <button
+            onClick={() => setActiveTab('exporter')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === 'exporter'
+                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold shadow-md shadow-amber-500/20 border border-amber-300/40'
+                : 'text-zinc-300 hover:text-white hover:bg-zinc-900 border border-transparent hover:border-zinc-800'
+            }`}
+          >
+            <Package className="w-3.5 h-3.5 text-yellow-300" />
+            <span>Universal Exporter 📦</span>
+          </button>
+
+          {/* 14. Daran basteln / Einstellungen */}
+          <button
+            onClick={() => setActiveTab('customizer')}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === 'customizer'
+                ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold shadow-md shadow-amber-500/20 border border-amber-300/40'
+                : 'text-zinc-300 hover:text-white hover:bg-zinc-900 border border-transparent hover:border-zinc-800'
+            }`}
+          >
+            <Sliders className="w-3.5 h-3.5 text-zinc-400" />
             <span>Daran basteln</span>
           </button>
         </nav>

@@ -11,6 +11,12 @@ import { VoicesStudioTab } from './components/VoicesStudioTab';
 import { StoriesArchiveTab } from './components/StoriesArchiveTab';
 import { CustomizerTab } from './components/CustomizerTab';
 import { KinksMatrixModal } from './components/KinksMatrixModal';
+import { ImageGeneratorTab } from './components/ImageGeneratorTab';
+import { ReverseSearchInspectorTab } from './components/ReverseSearchInspectorTab';
+import { CharacterTrainingTab } from './components/CharacterTrainingTab';
+import { ThreeStageTab } from './components/ThreeStageTab';
+import { AiKnowledgeHubTab } from './components/AiKnowledgeHubTab';
+import { UniversalMediaExporterTab } from './components/UniversalMediaExporterTab';
 
 const DEFAULT_SCANNED_FILES: ScannedFile[] = [
   {
@@ -74,16 +80,17 @@ const DEFAULT_SCANNED_FILES: ScannedFile[] = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabType>('chat');
+  const [activeTab, setActiveTab] = useState<TabType>('generator');
   const [characters, setCharacters] = useState<Character[]>(INITIAL_CHARACTERS);
-  const [activeCharacterId, setActiveCharacterId] = useState<string>('lila');
+  const [activeCharacterId, setActiveCharacterId] = useState<string>('mia');
   const [isKinksModalOpen, setIsKinksModalOpen] = useState(false);
 
-  // Studio live customizer settings
+  // Studio live customizer settings - default to luxury gold obsidian glass
   const [settings, setSettings] = useState<StudioSettings>({
-    theme: 'artanis_neon',
+    theme: 'gold_obsidian',
     openRouterApiKey: '',
-    remoteApiUrl: 'http://localhost:7860',
+    remoteApiUrl: 'http://100.82.14.90:7860',
+    sillyTavernApiUrl: 'http://localhost:8000',
     autoGenerateMedia: true,
     mediaTypeDefault: 'image',
     censorshipFilter: 'uncensored_max',
@@ -116,14 +123,16 @@ export default function App() {
 
   // Dynamic theme wrapper
   const themeClasses = {
-    artanis_neon: 'selection:bg-pink-600',
-    cyber_violet: 'selection:bg-purple-600',
-    emerald_noir: 'selection:bg-emerald-600',
-    midnight_gold: 'selection:bg-amber-600',
+    gold_obsidian: 'selection:bg-amber-500 selection:text-black bg-[#070709]',
+    silver_noir: 'selection:bg-zinc-300 selection:text-black bg-[#09090b]',
+    artanis_neon: 'selection:bg-pink-600 bg-slate-950',
+    cyber_violet: 'selection:bg-purple-600 bg-slate-950',
+    emerald_noir: 'selection:bg-emerald-600 bg-slate-950',
+    midnight_gold: 'selection:bg-amber-600 bg-slate-950',
   };
 
   return (
-    <div className={`min-h-screen bg-slate-950 text-slate-100 font-sans ${themeClasses[settings.theme] || 'selection:bg-pink-600'} selection:text-white`}>
+    <div className={`min-h-screen ${themeClasses[settings.theme] || 'bg-[#070709]'} bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(146,90,15,0.18),rgba(0,0,0,0))] text-zinc-100 font-sans`}>
       {/* Top Header with authentic Artanis × Tania branding */}
       <Header
         activeTab={activeTab}
@@ -136,6 +145,46 @@ export default function App() {
       {/* Main Artanis Modules */}
       <main className={`max-w-7xl mx-auto px-4 sm:px-6 py-6 ${settings.layoutDensity === 'compact' ? 'py-4' : 'py-6'}`}>
         
+        {/* Module: Bild-Generator (Erzeugen, Archivieren, Download, Full ZIP Backup) */}
+        {activeTab === 'generator' && (
+          <ImageGeneratorTab
+            characters={characters}
+            activeCharacterId={activeCharacterId}
+            onNavigateToTab={(tab) => setActiveTab(tab as TabType)}
+            onSendToChat={(_text, _mediaUrl) => {
+              setActiveTab('chat');
+            }}
+          />
+        )}
+
+        {/* Module: Rückwärtssuche & Metadata Inspector */}
+        {activeTab === 'inspector' && (
+          <ReverseSearchInspectorTab
+            onTransferToGenerator={(_prompt, _negPrompt, _model) => {
+              setActiveTab('generator');
+            }}
+            onSendToChat={(_text) => {
+              setActiveTab('chat');
+            }}
+          />
+        )}
+
+        {/* Module: LoRA Charakter-Training Studio */}
+        {activeTab === 'training' && (
+          <CharacterTrainingTab
+            characters={characters}
+            activeCharacterId={activeCharacterId}
+          />
+        )}
+
+        {/* Module: Interaktive 3D-Bühne & Audio */}
+        {activeTab === 'three3d' && (
+          <ThreeStageTab
+            characters={characters}
+            activeCharacterId={activeCharacterId}
+          />
+        )}
+
         {/* Module 1: Chat Modul (Roleplay with In-Chat Images & Videos) */}
         {activeTab === 'chat' && (
           <ChatTab
@@ -187,6 +236,18 @@ export default function App() {
           <ChromebookExplorerTab
             scannedFiles={scannedFiles}
             setScannedFiles={setScannedFiles}
+          />
+        )}
+
+        {/* Module: KI-Nachschlagewerk & Enzyklopädie */}
+        {activeTab === 'knowledge' && <AiKnowledgeHubTab />}
+
+        {/* Module: Universal Omni-Exporter & Medien-Besprecher */}
+        {activeTab === 'exporter' && (
+          <UniversalMediaExporterTab
+            characters={characters}
+            activeCharacterId={activeCharacterId}
+            scannedFiles={scannedFiles}
           />
         )}
 
